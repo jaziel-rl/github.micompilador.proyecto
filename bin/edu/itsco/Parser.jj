@@ -1,0 +1,269 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(Parser)
+package edu.itsco;
+
+public class Parser
+{
+  public static void main(String args []) throws ParseException
+  {
+    Parser parser = new Parser(System.in);
+    System.out.println("Bienvenido Al Compilador");
+    System.out.println("------------------------");
+    Parser.gramaticaPrincipal();
+    System.out.println("Compilo Correctamen");
+  }
+}
+PARSER_END(Parser)
+
+
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+
+
+//PALABRAS RESERVADAS
+TOKEN:
+{
+  < REAL: "real" >
+| < CADENA: "cadena" >
+| < DECIMAL: "decimal" >
+
+| < ESCRIBE: "escribe">
+| < LEE: "lee" >
+
+| < SI: "si" >
+| < SINO: "sino" >
+
+| < CAMBIAR: "cambiar" >
+| < CASO: "caso" >
+| < ROMPER: "romper" >
+| < XDEFECTO: "xdefecto" >
+
+| < PARA: "para" >
+
+| < MIENTRAS: "mientras" >
+| < HACER: "hacer" >
+
+| < PROGRAMA: "programa" >
+}
+
+
+
+//SIMBOLOS Y OPERADORES
+TOKEN:
+{
+  < MAS: "+" >
+| < MENOS: "-" >
+| < POR: "*" >
+| < DIVISION: "/" >
+| < RESIDUO: "%" >
+| < IGUAL: "=" >
+
+| < MAYOR: ">" >
+| < MENOR: "<" >
+
+| < AND: "&&" >
+| < OR: "||" >
+| < NOT: "!" >
+
+| < AP: "(" >
+| < CP: ")" >
+
+| < ALL: "{" >
+| < CLL: "}" >
+
+| < PC: ";" >
+| < PP: ":" >
+}
+
+
+
+//TOKEN'S DINAMICOS
+TOKEN:
+{
+  < #digitos: ["0" - "9"] >
+| < #letras: ["a" - "z","A" - "Z"] >
+| < ID: (<letras>|"_")(<letras>|<digitos>|"_")* >
+
+| < VALOR_REAL: (<digitos>)+ >
+| < VALOR_DECIMAL: (<digitos>)+"."(<digitos>)+ >
+| < VALOR_CADENA: "\""(~["\""])+ "\"" >  
+}
+
+
+
+//SECCION DE GRAMATICA
+void gramaticaPrincipal():{/*codigo Java*/}
+{
+//Código JavaCC
+  <PROGRAMA> <ID> <ALL>
+	gramaticaSentencias()
+  <CLL>
+ }
+
+
+
+void gramaticaSentencias():{}
+{
+  (
+    gramaticaDeclararVariables()
+    | gramaticaLeer()
+    | gramaticaEscribir()
+    | gramaticaSi()
+    | gramaticaMientras()
+    | gramaticaHacerMientras()
+    | gramaticaCambiar()
+    | gramaticaAsignacion()
+    | gramaticaPara()
+  )+
+}
+
+
+
+void gramaticaDeclararVariables():{}
+{
+  tipoDato() <ID> [<IGUAL> valor()] <PC> 
+}
+
+
+    
+void tipoDato():{}
+{
+  <REAL> | <CADENA> | <DECIMAL>
+}
+
+
+
+void valor():{}
+{
+  <VALOR_REAL> | <VALOR_CADENA> | <VALOR_DECIMAL> | <ID>
+}
+
+
+
+void gramaticaLeer():{}
+{
+  <LEE> <AP> <ID> <CP> <PC>
+}
+
+
+
+void gramaticaEscribir():{}
+{
+  <ESCRIBE> <AP> valor()(<MAS> valor())* <CP> <PC>
+}
+
+
+
+void gramaticaSi():{}
+{
+  <SI> <AP> condicion() <CP>
+  <ALL>
+  gramaticaSentencias()
+  <CLL>
+  [<SINO> <ALL> gramaticaSentencias() <CLL>]  
+}
+
+
+
+void condicion():{}
+{
+  evaluacionSimple() (opLogico() evaluacionSimple())*
+}
+
+
+
+void evaluacionSimple():{}
+{
+  valor() opRelacional() valor()
+}
+
+
+
+void opRelacional():{}
+{
+  <MAYOR> [<IGUAL>]
+| <MENOR> [<IGUAL>]
+| <NOT> <IGUAL>
+| <IGUAL> <IGUAL>
+}
+
+
+    
+void opLogico():{}
+{ <AND> | <OR>}
+ 
+
+
+void gramaticaMientras():{}
+{
+  <MIENTRAS> <AP> condicion() <CP>
+  <ALL> gramaticaSentencias() <CLL>
+}
+
+
+	
+void gramaticaHacerMientras():
+{}
+{
+  <HACER> <ALL> gramaticaSentencias() <CLL>
+  <MIENTRAS> <AP> condicion() <CP> <PC>
+}
+
+
+
+void gramaticaCambiar():{}
+{
+  <CAMBIAR> <AP> <ID> <CP>
+  <ALL>
+  (<CASO> <VALOR_REAL> <PP> gramaticaSentencias()<ROMPER> <PC>)+
+  [<XDEFECTO> gramaticaSentencias()[<ROMPER> <PC>]]
+  <CLL>
+}
+
+
+
+void gramaticaAsignacion():{}
+{ <ID> <IGUAL> operacionSimple() <PC> }
+
+
+
+void operacionSimple():{}
+{
+  (valor()|operacionParentesis())
+  (operadorAritmetico() (valor()| operacionParentesis()))*
+}
+
+
+
+void operacionParentesis():{}
+{ <AP> operacionSimple() <CP> }
+
+
+
+void operadorAritmetico():{}
+{ <MAS> | <MENOS> | <POR> | <DIVISION> | <RESIDUO> }
+
+
+
+void gramaticaPara():{}
+{
+  <PARA> <AP> <ID> <IGUAL> valor() <PC> condicion() <PC>
+  <ID> ( <MAS> <MAS> | <MENOS> <MENOS> | <IGUAL> operacionSimple()) <CP>
+  <ALL >
+  gramaticaSentencias()
+  <CLL>
+}
